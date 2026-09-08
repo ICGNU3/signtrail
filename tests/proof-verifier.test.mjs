@@ -11,6 +11,18 @@ function sha256Hex(input) {
   return createHash('sha256').update(input).digest('hex');
 }
 
+function resign(capsule) {
+  const payload = structuredClone(capsule);
+  delete payload.integrity;
+  return {
+    ...payload,
+    integrity: {
+      algorithm: 'SHA-256',
+      digest: sha256Hex(Buffer.from(canonicalize(payload), 'utf8'))
+    }
+  };
+}
+
 function makeFixture(version = '1.1') {
   const pdf = Buffer.from('%PDF-1.7\nsynthetic SignTrail fixture\n%%EOF\n');
   const payload = {
@@ -40,8 +52,7 @@ function makeFixture(version = '1.1') {
       receiptMeaning: 'byte-match-integrity-only'
     } : {})
   };
-  const digest = sha256Hex(Buffer.from(canonicalize(payload), 'utf8'));
-  return { pdf, capsule: { ...payload, integrity: { algorithm: 'SHA-256', digest } } };
+  return { pdf, capsule: resign(payload) };
 }
 
 test('valid v1.1 proof passes', () => {
@@ -84,11 +95,75 @@ test('receipt rejects embedded signature image data', () => {
   const payload = structuredClone(capsule);
   delete payload.integrity;
   payload.fields[0].signatureDataUrl = 'data:image/png;base64,AAAA';
-  payload.integrity = {
-    algorithm: 'SHA-256',
-    digest: sha256Hex(Buffer.from(canonicalize(Object.fromEntries(Object.entries(payload).filter(([key]) => key !== 'integrity'))), 'utf8'))
-  };
-  assert.throws(() => verifyProofCapsule(pdf, payload), /signature image data/);
+  const modified = resign(payload);
+  assert.throws(
+    () => verifyProofCapsule(pdf, modified),
+    /unsupported property "signatureDataUrl"|signature image data/
+  );
+});
+
+test('verifier enforces required top-level properties', () => {
+  const { pdf, capsule } = makeFixture();
+  const modified = structuredClone(capsule);
+  delete modified.createdAt;
+  const resigned = resign(modified);
+  assert.throws(
+    () => verifyProofCapsule(pdf, resigned),
+    /missing required property "createdAt"/
+  );
+});
+
+test('verifier validates nested field records against the schema', () => {
+  const { pdf, capsule } = makeFixture();
+  const modified = structuredClone(capsule);
+  delete modified.fields[0].placement.width;
+  const resigned = resign(modified);
+  assert.throws(
+    () => verifyProofCapsule(pdf, resigned),
+    /Field 1 placement is missing required property "width"/
+  );
+});
+
+test('verifier validates nested event records against the schema', () => {
+  const { pdf, capsule } = makeFixture();
+  const modified = structuredClone(capsule);
+  modified.events[0].unexpected = true;
+  const resigned = resign(modified);
+  assert.throws(
+    () => verifyProofCapsule(pdf, resigned),
+    /Event 1 contains unsupported property "unexpected"/
+  );
+});
+
+test('programmatic verification enforces the 2 MB receipt-size limit', () => {
+  const { pdf, capsule } = makeFixture('1.0');
+  const modified = structuredClone(capsule);
+  modified.documentName = `${'x'.repeat(2 * 1024 * 1024)}.pdf`;
+  const resigned = resign(modified);
+  assert.throws(
+    () => verifyProofCapsule(pdf, resigned),
+    /Integrity receipt exceeds the supported 2 MB limit/
+  );
+});
+
+test('long local document filenames remain verifiable', () => {
+  const { pdf, capsule } = makeFixture('1.0');
+  const modified = structuredClone(capsule);
+  modified.documentName = `${'long-local-document-name-'.repeat(20)}.pdf`;
+  const resigned = resign(modified);
+  assert.ok(resigned.documentName.length > 180);
+  assert.equal(verifyProofCapsule(pdf, resigned).ok, true);
+});
+
+test('hosted v1.1 document names retain the 180-character schema limit', () => {
+  const { pdf, capsule } = makeFixture('1.1');
+  const modified = structuredClone(capsule);
+  modified.documentName = `${'x'.repeat(181)}.pdf`;
+  const resigned = resign(modified);
+  assert.throws(
+    () => verifyProofCapsule(pdf, resigned),
+    /Document name is invalid/
+  );
 });
 
 test('CLI --json emits one machine-readable success object', async () => {
@@ -136,11 +211,22 @@ test('CLI --json emits machine-readable failure', async () => {
   assert.match(output.error, /Signed PDF SHA-256 does not match/);
 });
 
-test('published JSON Schema describes both supported receipt versions', async () => {
+test('published JSON Schema describes both supported receipt versions and permits long local filenames', async () => {
   const schema = JSON.parse(await readFile('schemas/signtrail-proof-capsule.schema.json', 'utf8'));
   assert.equal(schema.$schema, 'https://json-schema.org/draft/2020-12/schema');
   assert.deepEqual(schema.properties.version.enum, ['1.0', '1.1']);
   assert.equal(schema.properties.verificationScope.const, 'byte-for-byte-document-match');
   assert.equal(schema.properties.identityAssurance.const, 'none');
-  assert.ok(schema.allOf.some(rule => rule.then?.required?.includes('receiptMeaning')));
+  assert.equal(schema.properties.documentName.maxLength, undefined);
+  const hostedRule = schema.allOf.find(rule => rule.then?.required?.includes('receiptMeaning'));
+  assert.ok(hostedRule);
+  assert.equal(hostedRule.then.properties.documentName.maxLength, 180);
+});
+
+test('README documents npm --silent for uncontaminated JSON output', async () => {
+  const readme = await readFile('README.md', 'utf8');
+  assert.match(
+    readme,
+    /npm --silent run verify:proof -- \.\/document-signed\.pdf \.\/receipt\.json --json/
+  );
 });

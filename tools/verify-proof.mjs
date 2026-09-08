@@ -10,6 +10,21 @@ const MAX_RECEIPT_BYTES = 2 * 1024 * 1024;
 const MAX_PDF_BYTES = 25 * 1024 * 1024;
 const MAX_EVENTS = 500;
 
+const TOP_LEVEL_REQUIRED = [
+  'format', 'version', 'verificationId', 'documentName', 'originalHash',
+  'signedHash', 'createdAt', 'completedAt', 'pageCount', 'fields', 'events',
+  'verificationScope', 'identityAssurance', 'integrity'
+];
+const TOP_LEVEL_ALLOWED = new Set([
+  ...TOP_LEVEL_REQUIRED, 'completionEvidence', 'receiptMeaning'
+]);
+const FIELD_KEYS = new Set(['id', 'type', 'page', 'completed', 'required', 'assignedTo', 'placement']);
+const PLACEMENT_KEYS = new Set(['x', 'y', 'width', 'height']);
+const EVENT_KEYS = new Set(['type', 'title', 'timestamp', 'page', 'fieldId']);
+const INTEGRITY_KEYS = new Set(['algorithm', 'digest']);
+const FIELD_TYPES = new Set(['signature', 'initials', 'print_name', 'date', 'email', 'address', 'text', 'checkbox']);
+const ASSIGNEES = new Set(['self', 'recipient']);
+
 export function canonicalize(value) {
   if (value === null || typeof value !== 'object') return JSON.stringify(value);
   if (Array.isArray(value)) return `[${value.map(canonicalize).join(',')}]`;
@@ -39,36 +54,119 @@ function assertObject(value, label) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) fail(`${label} must be a JSON object.`);
 }
 
+function assertShape(value, required, allowed, label) {
+  assertObject(value, label);
+  for (const key of required) {
+    if (!Object.hasOwn(value, key)) fail(`${label} is missing required property "${key}".`);
+  }
+  for (const key of Object.keys(value)) {
+    if (!allowed.has(key)) fail(`${label} contains unsupported property "${key}".`);
+  }
+}
+
+function assertString(value, label, { minLength = 0, maxLength = Infinity } = {}) {
+  if (typeof value !== 'string' || value.length < minLength || value.length > maxLength) {
+    fail(`${label} is invalid.`);
+  }
+}
+
+function assertBoundedNumber(value, label, { minimum = 0, exclusiveMinimum = false, maximum = 1 } = {}) {
+  if (typeof value !== 'number' || !Number.isFinite(value)) fail(`${label} is invalid.`);
+  if (exclusiveMinimum ? value <= minimum : value < minimum) fail(`${label} is invalid.`);
+  if (value > maximum) fail(`${label} is invalid.`);
+}
+
+function serializedReceiptBytes(capsule) {
+  let serialized;
+  try {
+    serialized = JSON.stringify(capsule);
+  } catch {
+    fail('Integrity receipt cannot be serialized as JSON.');
+  }
+  if (typeof serialized !== 'string') fail('Integrity receipt cannot be serialized as JSON.');
+  const bytes = Buffer.byteLength(serialized, 'utf8');
+  if (bytes > MAX_RECEIPT_BYTES) fail('Integrity receipt exceeds the supported 2 MB limit.');
+  return serialized;
+}
+
+function validateFields(fields) {
+  if (!Array.isArray(fields)) fail('Receipt field records are missing.');
+  for (let index = 0; index < fields.length; index += 1) {
+    const label = `Field ${index + 1}`;
+    const field = fields[index];
+    assertShape(field, [...FIELD_KEYS], FIELD_KEYS, label);
+    assertString(field.id, `${label} id`, { minLength: 1, maxLength: 100 });
+    if (!FIELD_TYPES.has(field.type)) fail(`${label} type is invalid.`);
+    if (!Number.isInteger(field.page) || field.page < 1) fail(`${label} page is invalid.`);
+    if (typeof field.completed !== 'boolean') fail(`${label} completed flag is invalid.`);
+    if (typeof field.required !== 'boolean') fail(`${label} required flag is invalid.`);
+    if (!ASSIGNEES.has(field.assignedTo)) fail(`${label} assignee is invalid.`);
+
+    assertShape(field.placement, [...PLACEMENT_KEYS], PLACEMENT_KEYS, `${label} placement`);
+    assertBoundedNumber(field.placement.x, `${label} placement x`);
+    assertBoundedNumber(field.placement.y, `${label} placement y`);
+    assertBoundedNumber(field.placement.width, `${label} placement width`, { exclusiveMinimum: true });
+    assertBoundedNumber(field.placement.height, `${label} placement height`, { exclusiveMinimum: true });
+  }
+}
+
+function validateEvents(events) {
+  if (!Array.isArray(events)) fail('Receipt event records are missing.');
+  if (events.length > MAX_EVENTS) fail(`Receipt event trail exceeds ${MAX_EVENTS} events.`);
+  for (let index = 0; index < events.length; index += 1) {
+    const label = `Event ${index + 1}`;
+    const event = events[index];
+    assertShape(event, ['type', 'title', 'timestamp'], EVENT_KEYS, label);
+    assertString(event.type, `${label} type`, { minLength: 1, maxLength: 80 });
+    assertString(event.title, `${label} title`, { minLength: 1, maxLength: 200 });
+    if (!validTimestamp(event.timestamp)) fail(`${label} timestamp is invalid.`);
+    if (event.page != null && (!Number.isInteger(event.page) || event.page < 1)) fail(`${label} page is invalid.`);
+    if (event.fieldId != null) assertString(event.fieldId, `${label} fieldId`, { minLength: 1, maxLength: 100 });
+  }
+}
+
 export function verifyProofCapsule(pdfBytes, capsule) {
-  assertObject(capsule, 'Receipt');
+  const rawText = serializedReceiptBytes(capsule);
+
+  const required = capsule?.version === '1.1'
+    ? [...TOP_LEVEL_REQUIRED, 'completionEvidence', 'receiptMeaning']
+    : TOP_LEVEL_REQUIRED;
+  assertShape(capsule, required, TOP_LEVEL_ALLOWED, 'Receipt');
+
   if (capsule.format !== 'signtrail-proof-capsule' || !SUPPORTED_VERSIONS.has(capsule.version)) {
     fail('Receipt format or version is not supported.');
   }
   if (!VERIFICATION_ID.test(capsule.verificationId || '')) fail('Verification ID is missing or malformed.');
+  assertString(
+    capsule.documentName,
+    'Document name',
+    capsule.version === '1.1' ? { minLength: 1, maxLength: 180 } : { minLength: 1 }
+  );
   if (!HEX_64.test(capsule.originalHash || '') || !HEX_64.test(capsule.signedHash || '')) {
     fail('Document fingerprints are missing or malformed.');
   }
+  if (!validTimestamp(capsule.createdAt)) fail('Creation timestamp is invalid.');
   if (!validTimestamp(capsule.completedAt)) fail('Completion timestamp is invalid.');
-  if (capsule.createdAt != null && !validTimestamp(capsule.createdAt)) fail('Creation timestamp is invalid.');
   if (!Number.isInteger(capsule.pageCount) || capsule.pageCount < 1) fail('Page count is invalid.');
-  if (!Array.isArray(capsule.fields) || !Array.isArray(capsule.events)) fail('Receipt field or event records are missing.');
-  if (capsule.events.length > MAX_EVENTS) fail(`Receipt event trail exceeds ${MAX_EVENTS} events.`);
+
+  validateFields(capsule.fields);
+  validateEvents(capsule.events);
+
   if (capsule.identityAssurance !== 'none' || capsule.verificationScope !== 'byte-for-byte-document-match') {
     fail('Receipt declares an unsupported verification scope or identity assurance level.');
   }
-  if (capsule.version === '1.1' && (
-    capsule.completionEvidence !== 'client-attested-field-state' ||
-    capsule.receiptMeaning !== 'byte-match-integrity-only'
-  )) {
-    fail('Hosted integrity receipt declares unsupported evidence semantics.');
+  if (Object.hasOwn(capsule, 'completionEvidence') && capsule.completionEvidence !== 'client-attested-field-state') {
+    fail('Receipt declares unsupported completion evidence semantics.');
+  }
+  if (Object.hasOwn(capsule, 'receiptMeaning') && capsule.receiptMeaning !== 'byte-match-integrity-only') {
+    fail('Receipt declares unsupported receipt meaning.');
   }
 
-  const rawText = JSON.stringify(capsule);
   if (/signatureDataUrl|data:image\/png;base64/i.test(rawText)) {
     fail('Receipt improperly contains signature image data.');
   }
 
-  assertObject(capsule.integrity, 'Receipt integrity record');
+  assertShape(capsule.integrity, ['algorithm', 'digest'], INTEGRITY_KEYS, 'Receipt integrity record');
   if (capsule.integrity.algorithm !== 'SHA-256' || !HEX_64.test(capsule.integrity.digest || '')) {
     fail('Receipt integrity record is missing or malformed.');
   }

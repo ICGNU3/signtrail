@@ -18,10 +18,10 @@ The verifier supports SignTrail proof-capsule versions `1.0` and `1.1` and exits
 
 ### Machine-readable verification
 
-Automation, agents, CI jobs, and workflow systems can request a single JSON result:
+Automation, agents, CI jobs, and workflow systems can request a single JSON result. When invoking through npm, use `--silent` so npm's own banner/output cannot contaminate stdout:
 
 ```bash
-npm run verify:proof -- ./document-signed.pdf ./receipt.json --json
+npm --silent run verify:proof -- ./document-signed.pdf ./receipt.json --json
 ```
 
 Success:
@@ -40,7 +40,7 @@ The full success object also includes the original and signed hashes plus the co
 
 ### Proof-capsule contract
 
-`schemas/signtrail-proof-capsule.schema.json` publishes the portable receipt shape as JSON Schema Draft 2020-12. It describes both supported versions and makes the v1.1 evidence semantics explicit.
+`schemas/signtrail-proof-capsule.schema.json` publishes the portable receipt shape as JSON Schema Draft 2020-12. It describes both supported versions and makes the v1.1 evidence semantics explicit. The verifier enforces the same required top-level properties and nested field, placement, event, and integrity-record shapes. Local v1.0 receipts may contain document filenames longer than the hosted-service filename limit, subject to the overall 2 MB receipt-size limit.
 
 Applications can also call the verifier directly:
 
@@ -56,6 +56,8 @@ if (proof.ok) {
   // Advance a workflow using the verified evidence.
 }
 ```
+
+Programmatic verification enforces the same 2 MB receipt-size limit as the CLI, using the UTF-8 size of the serialized receipt object.
 
 See `examples/verify-proof.mjs` for a runnable integration example.
 

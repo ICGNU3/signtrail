@@ -21,37 +21,121 @@
     "integrity"
   ],
   "properties": {
-    "format": { "const": "signtrail-proof-capsule" },
-    "version": { "enum": ["1.0", "1.1"] },
-    "verificationId": { "type": "string", "pattern": "^ST-[0-9]{8}-[A-F0-9]{10}$" },
-    "documentName": { "type": "string", "minLength": 1, "maxLength": 180 },
-    "originalHash": { "type": "string", "pattern": "^[a-fA-F0-9]{64}$" },
-    "signedHash": { "type": "string", "pattern": "^[a-fA-F0-9]{64}$" },
-    "createdAt": { "type": "string", "format": "date-time" },
-    "completedAt": { "type": "string", "format": "date-time" },
-    "pageCount": { "type": "integer", "minimum": 1 },
+    "format": {
+      "const": "signtrail-proof-capsule"
+    },
+    "version": {
+      "enum": [
+        "1.0",
+        "1.1"
+      ]
+    },
+    "verificationId": {
+      "type": "string",
+      "pattern": "^ST-[0-9]{8}-[A-F0-9]{10}$"
+    },
+    "documentName": {
+      "type": "string",
+      "minLength": 1
+    },
+    "originalHash": {
+      "type": "string",
+      "pattern": "^[a-fA-F0-9]{64}$"
+    },
+    "signedHash": {
+      "type": "string",
+      "pattern": "^[a-fA-F0-9]{64}$"
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "completedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "pageCount": {
+      "type": "integer",
+      "minimum": 1
+    },
     "fields": {
       "type": "array",
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["id", "type", "page", "completed", "required", "assignedTo", "placement"],
+        "required": [
+          "id",
+          "type",
+          "page",
+          "completed",
+          "required",
+          "assignedTo",
+          "placement"
+        ],
         "properties": {
-          "id": { "type": "string", "minLength": 1, "maxLength": 100 },
-          "type": { "enum": ["signature", "initials", "print_name", "date", "email", "address", "text", "checkbox"] },
-          "page": { "type": "integer", "minimum": 1 },
-          "completed": { "type": "boolean" },
-          "required": { "type": "boolean" },
-          "assignedTo": { "enum": ["self", "recipient"] },
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "type": {
+            "enum": [
+              "signature",
+              "initials",
+              "print_name",
+              "date",
+              "email",
+              "address",
+              "text",
+              "checkbox"
+            ]
+          },
+          "page": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "completed": {
+            "type": "boolean"
+          },
+          "required": {
+            "type": "boolean"
+          },
+          "assignedTo": {
+            "enum": [
+              "self",
+              "recipient"
+            ]
+          },
           "placement": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["x", "y", "width", "height"],
+            "required": [
+              "x",
+              "y",
+              "width",
+              "height"
+            ],
             "properties": {
-              "x": { "type": "number", "minimum": 0, "maximum": 1 },
-              "y": { "type": "number", "minimum": 0, "maximum": 1 },
-              "width": { "type": "number", "exclusiveMinimum": 0, "maximum": 1 },
-              "height": { "type": "number", "exclusiveMinimum": 0, "maximum": 1 }
+              "x": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "y": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "width": {
+                "type": "number",
+                "exclusiveMinimum": 0,
+                "maximum": 1
+              },
+              "height": {
+                "type": "number",
+                "exclusiveMinimum": 0,
+                "maximum": 1
+              }
             }
           }
         }
@@ -63,38 +147,90 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["type", "title", "timestamp"],
+        "required": [
+          "type",
+          "title",
+          "timestamp"
+        ],
         "properties": {
-          "type": { "type": "string", "minLength": 1, "maxLength": 80 },
-          "title": { "type": "string", "minLength": 1, "maxLength": 200 },
-          "timestamp": { "type": "string", "format": "date-time" },
-          "page": { "type": "integer", "minimum": 1 },
-          "fieldId": { "type": "string", "minLength": 1, "maxLength": 100 }
+          "type": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "page": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "fieldId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          }
         }
       }
     },
-    "verificationScope": { "const": "byte-for-byte-document-match" },
-    "identityAssurance": { "const": "none" },
-    "completionEvidence": { "const": "client-attested-field-state" },
-    "receiptMeaning": { "const": "byte-match-integrity-only" },
+    "verificationScope": {
+      "const": "byte-for-byte-document-match"
+    },
+    "identityAssurance": {
+      "const": "none"
+    },
+    "completionEvidence": {
+      "const": "client-attested-field-state"
+    },
+    "receiptMeaning": {
+      "const": "byte-match-integrity-only"
+    },
     "integrity": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["algorithm", "digest"],
+      "required": [
+        "algorithm",
+        "digest"
+      ],
       "properties": {
-        "algorithm": { "const": "SHA-256" },
-        "digest": { "type": "string", "pattern": "^[a-fA-F0-9]{64}$" }
+        "algorithm": {
+          "const": "SHA-256"
+        },
+        "digest": {
+          "type": "string",
+          "pattern": "^[a-fA-F0-9]{64}$"
+        }
       }
     }
   },
   "allOf": [
     {
       "if": {
-        "properties": { "version": { "const": "1.1" } },
-        "required": ["version"]
+        "properties": {
+          "version": {
+            "const": "1.1"
+          }
+        },
+        "required": [
+          "version"
+        ]
       },
       "then": {
-        "required": ["completionEvidence", "receiptMeaning"]
+        "required": [
+          "completionEvidence",
+          "receiptMeaning"
+        ],
+        "properties": {
+          "documentName": {
+            "maxLength": 180
+          }
+        }
       }
     }
   ]
