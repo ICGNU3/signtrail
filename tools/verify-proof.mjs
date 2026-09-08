@@ -101,10 +101,28 @@ export function verifyProofCapsule(pdfBytes, capsule) {
   };
 }
 
+function machineResult(result) {
+  return {
+    verified: true,
+    verificationId: result.verificationId,
+    version: result.version,
+    signedHash: result.signedHash,
+    originalHash: result.originalHash,
+    completedAt: result.completedAt,
+    verificationScope: result.verificationScope,
+    identityAssurance: result.identityAssurance,
+    receiptMeaning: result.receiptMeaning,
+  };
+}
+
 async function runCli(argv) {
-  const [pdfPath, receiptPath] = argv;
-  if (!pdfPath || !receiptPath || argv.length !== 2) {
-    console.error('Usage: npm run verify:proof -- <signed.pdf> <integrity-receipt.json>');
+  const jsonMode = argv.includes('--json');
+  const positional = argv.filter(arg => arg !== '--json');
+  const [pdfPath, receiptPath] = positional;
+  if (!pdfPath || !receiptPath || positional.length !== 2) {
+    const message = 'Usage: npm run verify:proof -- <signed.pdf> <integrity-receipt.json> [--json]';
+    if (jsonMode) console.log(JSON.stringify({ verified: false, error: message }));
+    else console.error(message);
     return 2;
   }
 
@@ -120,18 +138,24 @@ async function runCli(argv) {
     }
 
     const result = verifyProofCapsule(pdfBytes, capsule);
-    console.log('✓ Receipt structure and semantics valid');
-    console.log('✓ Receipt integrity digest valid');
-    console.log('✓ Signed PDF SHA-256 matches receipt');
-    console.log('');
-    console.log('SIGNTRAIL PROOF VERIFIED');
-    console.log(`Verification ID: ${result.verificationId}`);
-    console.log(`Verification scope: ${result.verificationScope}`);
-    console.log(`Identity assurance: ${result.identityAssurance}`);
-    console.log('Meaning: byte-match integrity only; this does not prove legal identity or enforceability.');
+    if (jsonMode) {
+      console.log(JSON.stringify(machineResult(result)));
+    } else {
+      console.log('✓ Receipt structure and semantics valid');
+      console.log('✓ Receipt integrity digest valid');
+      console.log('✓ Signed PDF SHA-256 matches receipt');
+      console.log('');
+      console.log('SIGNTRAIL PROOF VERIFIED');
+      console.log(`Verification ID: ${result.verificationId}`);
+      console.log(`Verification scope: ${result.verificationScope}`);
+      console.log(`Identity assurance: ${result.identityAssurance}`);
+      console.log('Meaning: byte-match integrity only; this does not prove legal identity or enforceability.');
+    }
     return 0;
   } catch (error) {
-    console.error(`SIGNTRAIL PROOF INVALID: ${error?.message || error}`);
+    const message = error?.message || String(error);
+    if (jsonMode) console.log(JSON.stringify({ verified: false, error: message }));
+    else console.error(`SIGNTRAIL PROOF INVALID: ${message}`);
     return 1;
   }
 }

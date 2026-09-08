@@ -16,6 +16,49 @@ The verifier intentionally preserves SignTrail's evidence boundary: a successful
 
 The verifier supports SignTrail proof-capsule versions `1.0` and `1.1` and exits non-zero when either the receipt or PDF fails verification. It uses only Node.js built-ins, so another system can verify a SignTrail handoff without running the SignTrail application.
 
+### Machine-readable verification
+
+Automation, agents, CI jobs, and workflow systems can request a single JSON result:
+
+```bash
+npm run verify:proof -- ./document-signed.pdf ./receipt.json --json
+```
+
+Success:
+
+```json
+{"verified":true,"verificationId":"ST-20260907-ABCDEF1234","version":"1.1","verificationScope":"byte-for-byte-document-match","identityAssurance":"none","receiptMeaning":"byte-match-integrity-only"}
+```
+
+Failure exits non-zero and returns:
+
+```json
+{"verified":false,"error":"Signed PDF SHA-256 does not match the receipt."}
+```
+
+The full success object also includes the original and signed hashes plus the completion timestamp.
+
+### Proof-capsule contract
+
+`schemas/signtrail-proof-capsule.schema.json` publishes the portable receipt shape as JSON Schema Draft 2020-12. It describes both supported versions and makes the v1.1 evidence semantics explicit.
+
+Applications can also call the verifier directly:
+
+```js
+import { readFile } from 'node:fs/promises';
+import { verifyProofCapsule } from './tools/verify-proof.mjs';
+
+const pdf = await readFile('document-signed.pdf');
+const receipt = JSON.parse(await readFile('receipt.json', 'utf8'));
+const proof = verifyProofCapsule(pdf, receipt);
+
+if (proof.ok) {
+  // Advance a workflow using the verified evidence.
+}
+```
+
+See `examples/verify-proof.mjs` for a runnable integration example.
+
 ## v0.3.3 correction
 
 The hosted-link workflow is now genuinely post-finalization:
