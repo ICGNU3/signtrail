@@ -1,0 +1,34 @@
+{
+  "name": "signtrail-sites",
+  "version": "0.3.3",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vinext dev",
+    "build": "vinext build",
+    "preview": "vinext preview",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test tests/*.test.mjs",
+    "check": "npm run typecheck && npm test && npm run build",
+    "prebuild": "node build/copy-signtrail-vendor.mjs",
+    "vendor": "node build/copy-signtrail-vendor.mjs"
+  },
+  "dependencies": {
+    "next": "16.2.6",
+    "react": "19.2.6",
+    "react-dom": "19.2.6",
+    "vinext": "0.0.50",
+    "pdfjs-dist": "6.1.200",
+    "pdf-lib": "1.17.1",
+    "jszip": "3.10.1"
+  },
+  "devDependencies": {
+    "@cloudflare/vite-plugin": "1.37.1",
+    "@types/node": "24.1.0",
+    "@types/react": "19.1.9",
+    "@types/react-dom": "19.1.7",
+    "typescript": "5.8.3",
+    "vite": "8.0.13",
+    "wrangler": "4.92.0"
+  }
+}

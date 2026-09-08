@@ -1,0 +1,15 @@
+{
+  "version": "0.3.3",
+  "postFinalizeActionLabel": true,
+  "recipientFinalizeLabel": true,
+  "pendingState": true,
+  "preparedBytesStored": true,
+  "linkUsesStoredBytes": true,
+  "ownerSessionPreflight": true,
+  "fragmentRecipientLinks": true,
+  "noExternalRuntimeScripts": true,
+  "selfOnlyCsp": true,
+  "apiCreateRoutePresent": true,
+  "browserGatePass": true,
+  "status": "PASS"
+}

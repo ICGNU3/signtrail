@@ -1,0 +1,231 @@
+{
+  "package": "SignTrail_v0.3.3_POST_FINALIZE_SIGNEE_LINK",
+  "algorithm": "SHA-256",
+  "files": [
+    {
+      "path": ".openai/hosting.json",
+      "sha256": "6ca272296fa47ab0debfab45257707c842ce338b8e9fa9cb65de4a28d1e1cb3e",
+      "bytes": 38
+    },
+    {
+      "path": "00_DEPLOY_THIS_PACKAGE.md",
+      "sha256": "94639996808f1a475efcfb56758353c6c0affaee279f79f23f11c11ff135f78c",
+      "bytes": 3285
+    },
+    {
+      "path": "01_DEVELOPMENT_HANDOFF.md",
+      "sha256": "d8d622971fd63d49b6e9c95b630efd4fe3a4a4ba981059a3e8fcc9cdbe6b256e",
+      "bytes": 824
+    },
+    {
+      "path": "ACCEPTANCE.md",
+      "sha256": "82682025617a71a5074d1eb878230f6419c93ba674121bd1aae18ffa16f3ac9d",
+      "bytes": 2740
+    },
+    {
+      "path": "ARCHITECTURE.md",
+      "sha256": "bc6d2a50a5fa60ac1b1f04b1e8c98eb56fb097ac4eac413bd65f980b16aa9b2a",
+      "bytes": 2767
+    },
+    {
+      "path": "BUILD_PLAN.md",
+      "sha256": "4311d8f2d97c8debc7c2bd5af9b24c4a770304a108b4a9543e278519116b53b8",
+      "bytes": 927
+    },
+    {
+      "path": "FINALIZE_LINK_FIX_REPORT.md",
+      "sha256": "02869319ddddcdb0d0e2a063a3fd3f16f267498ca2649a9910f960338022eac1",
+      "bytes": 257
+    },
+    {
+      "path": "PACKAGE_METADATA.json",
+      "sha256": "33f5e8eb00de4b4d4b71f3d2ace2d652b026daad21b7d6a8002cf27e01bf3676",
+      "bytes": 1079
+    },
+    {
+      "path": "POST_FINALIZE_LINK_FIX_REPORT.md",
+      "sha256": "37d6325227528d5e69e7bc1114e1f28a884757156df0334057cece85b804372a",
+      "bytes": 1207
+    },
+    {
+      "path": "README.md",
+      "sha256": "57a9f8b6dae25e9c7bcc51f72fb10e8980ef045410a88e8bb55441a2e3a5b621",
+      "bytes": 1595
+    },
+    {
+      "path": "SECURITY.md",
+      "sha256": "338c1d14c7c1c0f05b69082c2b50692fead3f473be369bfee9a03d34bc78d0d4",
+      "bytes": 2893
+    },
+    {
+      "path": "SECURITY_FIX_REPORT.md",
+      "sha256": "4dc683cdfdc3a19f89730af53720849c941249e1d413525988c4e731268801dc",
+      "bytes": 5948
+    },
+    {
+      "path": "THIRD_PARTY_NOTICES.md",
+      "sha256": "e6f6d0408878c808101502d1345072a2169f08be43f77c86aa9608f602f1302b",
+      "bytes": 481
+    },
+    {
+      "path": "app/globals.css",
+      "sha256": "35da27a841a277e708e825d31f7f38d652a11bdbb1d0c637b8daed4e97e36d64",
+      "bytes": 288
+    },
+    {
+      "path": "app/layout.tsx",
+      "sha256": "cdf16b6e434252ee760a1d7ee720cab8816fedf458efda0185e907e4a0385d05",
+      "bytes": 445
+    },
+    {
+      "path": "app/page.tsx",
+      "sha256": "20e30f4797988f2dade90cf49bb36010e45ed0cb737e05418a13f88e3aa95292",
+      "bytes": 121
+    },
+    {
+      "path": "app/signtrail-frame.tsx",
+      "sha256": "487eb3ebf593eb76e742862db9108bd888d81b1973bdb147253f3269edc3138e",
+      "bytes": 502
+    },
+    {
+      "path": "build/copy-signtrail-vendor.mjs",
+      "sha256": "26dbbcca86e54ede5d747105b1d07b8085c38899c5c07d58f42751a2dd15d6c1",
+      "bytes": 1243
+    },
+    {
+      "path": "build/sites-vite-plugin.js",
+      "sha256": "c7d214406d1d47ae25cf6080c4cc92d46c6dec71490bcc3e03580dd46f14a2ca",
+      "bytes": 507
+    },
+    {
+      "path": "drizzle/0000_signtrail.sql",
+      "sha256": "bd3621899ab071637101afa203289a388ca846a6a03e452ac81401d18b6e5108",
+      "bytes": 1101
+    },
+    {
+      "path": "drizzle/0001_public_deployment_hardening.sql",
+      "sha256": "e7b0a85db94beee9acbf51613bdaf99eada70ae8a0cde408dd9c4d0f85fadabb",
+      "bytes": 837
+    },
+    {
+      "path": "evidence/gate-7-api-contract-output.txt",
+      "sha256": "1975276a88aec5ffad363bcca2e49c7ca750695b56a76bb2d03cdb9d55b29519",
+      "bytes": 1135
+    },
+    {
+      "path": "evidence/gate-7-browser-results.json",
+      "sha256": "bdd913bbab979c535e5c36ab95b848da94a1e533a6f62e00a1c6b46232abaa7b",
+      "bytes": 1475
+    },
+    {
+      "path": "evidence/gate-7-browser-test-output.txt",
+      "sha256": "fe78cc0d24f1c97bb50fa74788e98f96fa31e22b4eee1a81da21fed14e4f09ba",
+      "bytes": 1476
+    },
+    {
+      "path": "evidence/gate-7-install-boundary.txt",
+      "sha256": "84ad3a1da5233332d7dd2e86c6b0b591745d82f9fb8a9c468609479d4136c22f",
+      "bytes": 486
+    },
+    {
+      "path": "evidence/gate-7-post-finalize-signee-link.png",
+      "sha256": "ec352aef4f415bf81216243e9fbcf7b2aa52d45a5c86e3640ac73823cc3797d2",
+      "bytes": 226167
+    },
+    {
+      "path": "evidence/gate-7-recipient-mobile-completion.png",
+      "sha256": "8c7ad2c63bef1a73aaf901a51172cea980ab4b93c6ab45ade04d736e200fa9d9",
+      "bytes": 65166
+    },
+    {
+      "path": "evidence/gate-7-static-checks.json",
+      "sha256": "7f51cec19292cbf52b96d03817f7e9f9217064c315d2028ef4addfeef6944bd4",
+      "bytes": 386
+    },
+    {
+      "path": "index.html",
+      "sha256": "ef01259543e288a421a75598a6dd1e6ee2de0badd13d2e03713465bcdf787b51",
+      "bytes": 343
+    },
+    {
+      "path": "next-env.d.ts",
+      "sha256": "879741880b6ab48da99dcc06dcc674d381c9826137b0496bf7bb368f302de9fc",
+      "bytes": 81
+    },
+    {
+      "path": "next.config.js",
+      "sha256": "836ae399d309583b5660d8ffa8ae1be46bf8130da80687382d5e663b8d3378b9",
+      "bytes": 142
+    },
+    {
+      "path": "package.json",
+      "sha256": "fdf8fe8fcb4b7de52c3766e9de769cff51a8b861f6eb433808c5f30f9ea37d18",
+      "bytes": 882
+    },
+    {
+      "path": "public/pdf-loader.mjs",
+      "sha256": "6d69b093710938fac0db8b0853d5305778b4e534aea339761562653d9ae29cdf",
+      "bytes": 205
+    },
+    {
+      "path": "public/screenshot.jpeg",
+      "sha256": "275eba026ff57f33ccb381efe0e60f5aeb0f9f188f0b5e6ab982e5fa70015aca",
+      "bytes": 93154
+    },
+    {
+      "path": "public/signtrail.css",
+      "sha256": "7684ac5779aa1d0c6dc49f2dce9cf5df85f4b7067246c940cef16126b85ccb36",
+      "bytes": 28473
+    },
+    {
+      "path": "public/signtrail.html",
+      "sha256": "5fc7847d25ebf53d4de8bd340270dba7447d7db321a3e2d12ccde6515354b9b0",
+      "bytes": 20310
+    },
+    {
+      "path": "public/signtrail.js",
+      "sha256": "6e40d0a00e3101a95a873c30d292c9780da790d7328a7986c73b9004d8ef31db",
+      "bytes": 107397
+    },
+    {
+      "path": "public/vendor/jszip.min.js",
+      "sha256": "acc7e41455a80765b5fd9c7ee1b8078a6d160bbbca455aeae854de65c947d59e",
+      "bytes": 97630
+    },
+    {
+      "path": "tests/api-contract.test.mjs",
+      "sha256": "e662231b0c4c64c3bf31cc988180e089cb33401c52029997434d40ea0da60300",
+      "bytes": 19128
+    },
+    {
+      "path": "tests/browser_acceptance.py",
+      "sha256": "6cbaae0439d3261cfa67daee5e1ebb131812f9dc2d2a11a746215be65bcd8135",
+      "bytes": 23612
+    },
+    {
+      "path": "tsconfig.json",
+      "sha256": "39a7d7c12a0976fc2f6c2d15bf4e7fda0429df05f38994518fdf4ad39636e058",
+      "bytes": 533
+    },
+    {
+      "path": "vite.config.js",
+      "sha256": "210e1cdc6fa15f33a60ed10811c2d496d722660128a326bd93a5cd5d5636af23",
+      "bytes": 337
+    },
+    {
+      "path": "worker/api.js",
+      "sha256": "ab6d5a0b4c3cc87874622da67652e81767f2a616dc2d41f6bc5654d0d878a5ef",
+      "bytes": 35403
+    },
+    {
+      "path": "worker/index.js",
+      "sha256": "2f6970877eb8ba90488db301119cefb3306e9bc8c986ed939d7b28dfbe6be4fb",
+      "bytes": 1604
+    },
+    {
+      "path": "wrangler.jsonc",
+      "sha256": "94aa0fca0f7034a0b5f6e0472894a1378aec8a063454e8e05b85558c7d470828",
+      "bytes": 501
+    }
+  ]
+}

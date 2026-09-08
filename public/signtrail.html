@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#11131a" />
+  <title>SignTrail — Prepare, send, sign, and verify PDFs</title>
+  <link rel="stylesheet" href="/signtrail.css" />
+
+</head>
+<body>
+  <main id="landing" class="landing">
+    <nav class="landing-nav">
+      <div class="brand"><span class="brand-mark" aria-hidden="true"></span><span>SignTrail</span></div>
+      <div class="privacy-pill"><span class="privacy-dot"></span>Local signing · Hosted links only when requested</div>
+    </nav>
+
+    <section class="hero">
+      <div>
+        <div class="eyebrow">Portable trust, not platform lock-in</div>
+        <h1>Sign a PDF.<br />Leave a trail.</h1>
+        <p class="hero-copy">Sign your own PDF or prepare blank recipient fields, create a private signee link, and keep a portable integrity trail from opening through completion.</p>
+        <div class="trust-row">
+          <span><b class="check">✓</b> Signature request links</span>
+          <span><b class="check">✓</b> Print name, date, address &amp; more</span>
+          <span><b class="check">✓</b> Portable integrity receipt</span>
+        </div>
+      </div>
+
+      <div class="upload-card">
+        <div id="uploadZone" class="upload-zone" role="button" tabindex="0" aria-label="Upload a PDF">
+          <div class="upload-icon" aria-hidden="true">⇧</div>
+          <h2>Drop your PDF here</h2>
+          <p>Or choose a PDF from this device.<br />Maximum recommended size: 25 MB.</p>
+          <button id="chooseFileButton" class="primary-btn" type="button">Choose PDF</button>
+          <input id="fileInput" class="hidden" type="file" accept="application/pdf,.pdf" />
+          <div class="file-note">Self-signing stays local. Creating a signee link uploads the prepared PDF to private Sites storage.</div>
+          <div id="landingError" class="error-banner hidden" role="alert"></div>
+        </div>
+        <button id="openVerifierButton" class="verify-entry-button" type="button">
+          <span>Verify a signed document<small>Compare a signed PDF with its SignTrail Integrity receipt.</small></span>
+          <span class="verify-entry-arrow" aria-hidden="true">→</span>
+        </button>
+        <button id="openHistoryButton" class="verify-entry-button" type="button">
+          <span>Signed document history<small>Reopen locally saved final packages and export them for handoff.</small></span>
+          <span class="verify-entry-arrow" aria-hidden="true">↺</span>
+        </button>
+      </div>
+    </section>
+  </main>
+
+  <main id="verifier" class="verification-screen hidden">
+    <nav class="verification-nav">
+      <div class="brand"><span class="brand-mark" aria-hidden="true"></span><span>SignTrail Verify</span></div>
+      <button id="backFromVerifierButton" class="ghost-btn" type="button">Back</button>
+    </nav>
+    <section class="verification-shell">
+      <div class="verification-heading">
+        <div class="eyebrow">Independent local comparison</div>
+        <h1>Check the exact signed file.</h1>
+        <p>Choose a signed PDF and its Integrity receipt. SignTrail recalculates the PDF fingerprint and checks the receipt structure and integrity digest entirely in this browser.</p>
+      </div>
+      <div class="verify-grid">
+        <section id="verifyPdfCard" class="verify-file-card">
+          <div><h2>1. Signed PDF</h2><p>The exact PDF exported when the document was finalized.</p><div id="verifyPdfName" class="verify-file-name">No PDF selected</div></div>
+          <button id="chooseVerifyPdfButton" class="secondary-btn" type="button">Choose signed PDF</button>
+          <input id="verifyPdfInput" class="verify-file-input" type="file" accept="application/pdf,.pdf" />
+        </section>
+        <section id="verifyCapsuleCard" class="verify-file-card">
+          <div><h2>2. Integrity receipt</h2><p>The JSON receipt downloaded alongside the signed PDF.</p><div id="verifyCapsuleName" class="verify-file-name">No receipt selected</div></div>
+          <button id="chooseVerifyCapsuleButton" class="secondary-btn" type="button">Choose Integrity receipt</button>
+          <input id="verifyCapsuleInput" class="verify-file-input" type="file" accept="application/json,.json" />
+        </section>
+      </div>
+      <div class="verify-action-row">
+        <button id="runVerificationButton" class="primary-btn" type="button" disabled>Verify package</button>
+        <span class="verify-disclaimer">This confirms byte-for-byte document matching. It does not authenticate a signer’s legal identity or guarantee enforceability.</span>
+      </div>
+      <section id="verificationResult" class="verification-result hidden" aria-live="polite">
+        <div id="verificationResultKicker" class="result-kicker"></div>
+        <h2 id="verificationResultTitle"></h2>
+        <p id="verificationResultMessage"></p>
+        <dl id="verificationResultDetails" class="result-details"></dl>
+      </section>
+    </section>
+  </main>
+
+  <main id="app" class="app hidden">
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark" aria-hidden="true"></span><span>SignTrail</span></div>
+      <div class="doc-meta">
+        <div id="documentTitle" class="doc-title">Document.pdf</div>
+        <div id="documentSubtitle" class="doc-subtitle">Preparing document…</div>
+      </div>
+      <div id="recipientBanner" class="recipient-banner">Signature request opened</div>
+      <div class="top-actions">
+        <button id="historyTopButton" class="ghost-btn" type="button">History &amp; links</button>
+        <button id="newDocumentButton" class="ghost-btn" type="button">New document</button>
+        <button id="exportButton" class="primary-btn" type="button" disabled>Finalize document</button>
+      </div>
+    </header>
+
+    <section class="workspace">
+      <aside class="sidebar">
+        <h2 class="panel-title">Who fills new fields?</h2>
+        <div class="workflow-switch" role="group" aria-label="Field assignee">
+          <button id="selfModeButton" class="active" type="button">Fill now</button>
+          <button id="recipientModeButton" type="button">Recipient</button>
+        </div>
+        <h2 class="panel-title">Add a field</h2>
+        <div class="tool-grid">
+          <button id="signatureTool" class="tool-card" data-tool="signature" type="button" aria-pressed="false"><span class="tool-icon" aria-hidden="true">✍</span><span><span class="tool-label">Signature</span><span class="tool-hint">Drawn ink</span></span></button>
+          <button id="initialsTool" class="tool-card" data-tool="initials" type="button" aria-pressed="false"><span class="tool-icon" aria-hidden="true">Aa</span><span><span class="tool-label">Initials</span><span class="tool-hint">Drawn ink</span></span></button>
+          <button id="printNameTool" class="tool-card" data-tool="print_name" type="button" aria-pressed="false"><span class="tool-icon" aria-hidden="true">N</span><span><span class="tool-label">Print name</span><span class="tool-hint">Required text</span></span></button>
+          <button id="dateTool" class="tool-card" data-tool="date" type="button" aria-pressed="false"><span class="tool-icon" aria-hidden="true">◫</span><span><span class="tool-label">Date</span><span class="tool-hint">Auto or typed</span></span></button>
+          <button id="emailTool" class="tool-card" data-tool="email" type="button" aria-pressed="false"><span class="tool-icon" aria-hidden="true">@</span><span><span class="tool-label">Email</span><span class="tool-hint">Typed entry</span></span></button>
+          <button id="addressTool" class="tool-card" data-tool="address" type="button" aria-pressed="false"><span class="tool-icon" aria-hidden="true">⌂</span><span><span class="tool-label">Address</span><span class="tool-hint">Multi-line</span></span></button>
+          <button id="textTool" class="tool-card" data-tool="text" type="button" aria-pressed="false"><span class="tool-icon" aria-hidden="true">T</span><span><span class="tool-label">Text</span><span class="tool-hint">Custom entry</span></span></button>
+          <button id="checkboxTool" class="tool-card" data-tool="checkbox" type="button" aria-pressed="false"><span class="tool-icon" aria-hidden="true">☑</span><span><span class="tool-label">Checkbox</span><span class="tool-hint">Consent mark</span></span></button>
+        </div>
+        <div class="instruction-card"><strong>Prepare or fill</strong><br />Choose who fills the next field, select its type, then click the PDF. Recipient fields stay blank until the private link is opened.</div>
+        <div id="shareCard" class="share-card">
+          <strong>Recipient delivery</strong>
+          <p>When every fill-now field is ready, use <strong>Finalize recipient document</strong> in the top bar. After the exact document is locked, SignTrail will show a separate <strong>Create signee link</strong> step.</p>
+        </div>
+      </aside>
+
+      <section id="viewer" class="viewer" aria-label="PDF document workspace">
+        <div id="documentStack" class="document-stack"></div>
+      </section>
+
+      <aside class="audit-panel">
+        <h2 class="panel-title">Document status</h2>
+        <div class="status-card">
+          <div class="status-row"><span>Pages</span><span id="pageCount" class="status-value">0</span></div>
+          <div class="status-row"><span>Fields</span><span id="fieldCount" class="status-value">0</span></div>
+          <div class="status-row"><span>Completed</span><span id="signedCount" class="status-value">0</span></div>
+          <div class="status-row"><span>Required left</span><span id="requiredCount" class="status-value">0</span></div>
+          <div class="status-row"><span>Document</span><span id="documentState" class="status-value">Editing</span></div>
+          <div class="status-row"><span>PDF processing</span><span class="status-value good">Browser</span></div>
+        </div>
+        <h2 class="panel-title" style="margin-top:18px">Original SHA-256</h2>
+        <div id="hashBox" class="hash-box">Calculating…</div>
+        <h2 id="signedHashTitle" class="panel-title hidden">Signed SHA-256</h2>
+        <div id="signedHashBox" class="hash-box hidden"></div>
+        <h2 class="panel-title">Live trail</h2>
+        <div id="eventList" class="event-list"><div class="empty-events">Events will appear as you work.</div></div>
+      </aside>
+    </section>
+  </main>
+
+  <div id="placeTip" class="place-tip hidden">Click a page to place the selected field · Esc to cancel</div>
+
+  <div id="signatureModal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="signatureModalTitle">
+    <section class="modal">
+      <header class="modal-head">
+        <div>
+          <h2 id="signatureModalTitle">Draw your signature</h2>
+        </div>
+        <button id="closeSignatureModal" class="icon-btn" type="button" aria-label="Close">×</button>
+      </header>
+      <div class="modal-body">
+        <p class="sig-instruction">Use a mouse, stylus, or finger. Your signature remains in this browser and is embedded only when you export.</p>
+        <div class="signature-pad-wrap">
+          <canvas id="signaturePad" aria-label="Signature drawing area"></canvas>
+          <span class="signature-x">x</span>
+          <span class="signature-line"></span>
+        </div>
+        <div class="sig-toolbar">
+          <span id="signatureStrokeStatus" class="sig-stroke-status">0 strokes</span>
+          <div class="sig-history-actions">
+            <button id="undoSignatureButton" class="secondary-btn" type="button" disabled>Undo stroke</button>
+            <button id="redoSignatureButton" class="secondary-btn" type="button" disabled>Redo</button>
+          </div>
+        </div>
+      </div>
+      <footer class="modal-foot">
+        <button id="clearSignatureButton" class="ghost-btn" type="button">Clear</button>
+        <div class="modal-foot-right">
+          <button id="cancelSignatureButton" class="secondary-btn" type="button">Cancel</button>
+          <button id="applySignatureButton" class="primary-btn" type="button" disabled>Apply signature</button>
+        </div>
+      </footer>
+    </section>
+  </div>
+
+
+  <div id="fieldValueModal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="fieldValueModalTitle">
+    <section class="modal">
+      <header class="modal-head"><div><h2 id="fieldValueModalTitle">Complete field</h2></div><button id="closeFieldValueModal" class="icon-btn" type="button" aria-label="Close">×</button></header>
+      <div class="modal-body">
+        <div class="field-form">
+          <label><span id="fieldValueLabel">Value</span><input id="fieldValueInput" type="text" autocomplete="off" /></label>
+          <label id="fieldValueTextareaLabel" class="hidden"><span>Address or text</span><textarea id="fieldValueTextarea"></textarea></label>
+          <label id="fieldRequiredLabel" class="required-toggle"><input id="fieldRequiredInput" type="checkbox" checked /><span>Required before finalization</span></label>
+          <div class="privacy-disclosure">Recipient-entered values are embedded only into the final PDF. The integrity receipt stores field-completion metadata and document fingerprints, not field values or signature images.</div>
+        </div>
+      </div>
+      <footer class="modal-foot"><button id="clearFieldValueButton" class="ghost-btn" type="button">Clear</button><div class="modal-foot-right"><button id="cancelFieldValueButton" class="secondary-btn" type="button">Cancel</button><button id="applyFieldValueButton" class="primary-btn" type="button">Apply value</button></div></footer>
+    </section>
+  </div>
+
+  <div id="shareModal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="shareModalTitle">
+    <section class="modal share-modal">
+      <header class="modal-head"><div><h2 id="shareModalTitle">Finalized — create signee link</h2></div><button id="closeShareModal" class="icon-btn" type="button" aria-label="Close">×</button></header>
+      <div class="modal-body">
+        <div class="share-form">
+          <label>Recipient email (optional)<input id="shareRecipientEmail" type="email" autocomplete="email" placeholder="person@example.com" /></label>
+          <label>Request title<input id="shareRequestTitle" type="text" maxlength="120" placeholder="Please review and sign" /></label>
+          <label>Message (included in your email draft)<textarea id="shareMessage" maxlength="1000" placeholder="Please open the secure link, complete the required fields, and download your signed copy."></textarea></label>
+        </div>
+        <div class="privacy-disclosure"><strong>This document is already finalized and locked:</strong> creating the link uploads those exact finalized bytes and cannot change field placement. Creating a hosted link requires Sign in with ChatGPT. <strong>Deployment access:</strong> owner-only Sites links can only be opened by allowed viewers; outside signees require the Site audience to be set to <em>Anyone on the internet</em>. <strong>What is tracked:</strong> link-open events, open count, and completion status. Counts can include reloads, previews, scanners, forwarded links, or another person. The recipient email is only a sender-side label unless the visitor optionally signs in.</div>
+        <div id="shareAuthStatus" class="share-auth-status checking">Checking ChatGPT owner session…</div><div id="shareResult" class="share-result hidden"><strong>Signature request ready</strong><div class="share-link-row"><input id="shareLinkOutput" readonly /><button id="copyShareLinkButton" class="secondary-btn" type="button">Copy</button></div><div class="share-actions"><button id="emailShareLinkButton" class="primary-btn" type="button">Open email draft</button><button id="openShareLinkButton" class="secondary-btn" type="button">Open link</button></div></div>
+      </div>
+      <footer class="modal-foot"><button id="cancelShareButton" class="secondary-btn" type="button">Close</button><button id="createShareLinkButton" class="primary-btn" type="button">Create signee link</button></footer>
+    </section>
+  </div>
+
+  <div id="completionModal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="completionModalTitle">
+    <section class="modal">
+      <header class="modal-head">
+        <div><h2 id="completionModalTitle">Final package created</h2></div>
+        <button id="closeCompletionModal" class="icon-btn" type="button" aria-label="Close">×</button>
+      </header>
+      <div class="modal-body">
+        <div class="proof-summary">
+          <div class="proof-stat"><span class="proof-stat-label">Verification ID</span><span id="completionVerificationId" class="proof-stat-value"></span></div>
+          <div class="proof-stat"><span class="proof-stat-label">Completed</span><span id="completionTime" class="proof-stat-value"></span></div>
+        </div>
+        <div class="proof-hash"><strong>Original SHA-256</strong><br /><span id="completionOriginalHash"></span><br /><br /><strong>Signed SHA-256</strong><br /><span id="completionSignedHash"></span></div>
+        <p class="proof-note">The editor is now locked. Download both files as a pair. The Integrity receipt contains document fingerprints and a privacy-safe event trail, never the handwritten signature image.</p>
+        <div class="handoff-callout"><strong>Ready to hand off:</strong> export one ZIP containing the exact signed PDF, its Integrity receipt, and verification instructions for recipients or additional signees.</div>
+      </div>
+      <footer class="modal-foot">
+        <div class="completion-actions">
+          <button id="downloadSignedPdfButton" class="secondary-btn" type="button">Download signed PDF</button>
+          <button id="downloadProofCapsuleButton" class="secondary-btn" type="button">Download Integrity receipt</button>
+          <button id="verifyCurrentPackageButton" class="secondary-btn" type="button">Verify this package</button>
+          <button id="exportHandoffButton" class="primary-btn" type="button">Export handoff bundle</button>
+        </div>
+      </footer>
+    </section>
+  </div>
+
+  <div id="historyModal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="historyModalTitle">
+    <section class="modal history-modal">
+      <header class="modal-head">
+        <div><h2 id="historyModalTitle">Signed document history</h2></div>
+        <button id="closeHistoryModal" class="icon-btn" type="button" aria-label="Close">×</button>
+      </header>
+      <div class="modal-body">
+        <section class="hosted-section">
+          <div class="hosted-heading"><h3>Hosted signature links</h3><button id="refreshHostedButton" class="secondary-btn" type="button">Refresh</button></div>
+          <p class="history-note">Management tokens remain only in this browser. Link opens are token events; a verified opener email appears only when the recipient signs in with ChatGPT.</p>
+          <div id="hostedList" class="history-list"><div class="history-empty">Loading hosted requests…</div></div>
+        </section>
+        <p class="history-note"><strong>Local completed documents</strong><br />Final packages are stored in IndexedDB on this device so they can be downloaded or exported again.</p>
+        <div id="historyList" class="history-list"><div class="history-empty">Loading local history…</div></div>
+      </div>
+      <footer class="modal-foot">
+        <button id="clearHistoryButton" class="danger-btn" type="button">Clear history</button>
+        <button id="closeHistoryFooterButton" class="secondary-btn" type="button">Close</button>
+      </footer>
+    </section>
+  </div>
+
+  <div id="loadingOverlay" class="loading-overlay hidden" aria-live="polite">
+    <div class="loading-card"><span class="spinner"></span><span id="loadingText">Opening PDF…</span></div>
+  </div>
+  <div id="toast" class="toast hidden" role="status"></div>
+
+  <script type="module" src="/pdf-loader.mjs"></script>
+  <script src="/vendor/pdf-lib.min.js" defer></script>
+  <script src="/vendor/jszip.min.js" defer></script>
+  <script src="/signtrail.js" defer></script>
+
+</body>
+</html>

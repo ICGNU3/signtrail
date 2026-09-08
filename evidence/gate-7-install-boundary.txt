@@ -1,0 +1,10 @@
+Command attempted:
+  npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+
+Result:
+  BLOCKED by the execution environment's internal npm mirror.
+  @cloudflare/vite-plugin@1.37.1 returned HTTP 404 from the internal registry.
+
+Meaning:
+  No package-lock.json or production Sites build was generated in this environment.
+  The actual ChatGPT Sites deployment environment must install the exact pinned package.json versions and run npm run build during owner-only Gate 7A.

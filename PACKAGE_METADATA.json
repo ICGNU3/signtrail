@@ -1,0 +1,27 @@
+{
+  "product": "SignTrail",
+  "version": "0.3.3",
+  "release": "POST_FINALIZE_SIGNEE_LINK_UPDATE",
+  "deploymentTarget": "ChatGPT Sites",
+  "entrypoints": {
+    "sites": "app/page.tsx",
+    "workspace": "public/signtrail.html",
+    "worker": "worker/index.js"
+  },
+  "bindings": {
+    "d1": "DB",
+    "r2": "DOCUMENTS"
+  },
+  "completedGates": [
+    "Vertical PDF signing",
+    "Integrity receipt and verification",
+    "Pen reliability and local history",
+    "Recipient field engine and hosted requests",
+    "Public deployment security hardening",
+    "Post-finalization signee-link workflow"
+  ],
+  "testStatus": "API/security 4/4 PASS; Chromium post-finalization sender and mobile recipient workflow PASS; finalized PDF reuse verified; JavaScript and Python syntax PASS.",
+  "liveStatus": "Existing Site is owner-only. v0.3.3 has not yet been deployed and accepted on that live Site.",
+  "nextMove": "Update the existing owner-only Site and run Gate 7A. Only then run public Gate 7B if external recipient access is intended.",
+  "generatedAt": "2026-07-30T00:43:00-05:00"
+}
