@@ -2,6 +2,20 @@
 
 SignTrail is a browser-based PDF signing workspace and ChatGPT Sites signature-request application. It supports local self-signing, recipient-assigned fields, hosted signee links, signed PDF export, byte-match integrity receipts, local signed-document history, and sender management of hosted requests.
 
+## Portable proof verification
+
+SignTrail integrity receipts can be verified outside the browser app with the zero-dependency Node.js verifier:
+
+```bash
+npm run verify:proof -- ./document-signed.pdf ./document-ST-20260907-ABCDEF1234-integrity-receipt.json
+```
+
+A successful verification checks the receipt structure and declared evidence semantics, recomputes the receipt's canonical SHA-256 integrity digest, and confirms that the supplied PDF's SHA-256 matches the signed-document fingerprint in the receipt.
+
+The verifier intentionally preserves SignTrail's evidence boundary: a successful result proves byte-match integrity. It does not establish legal identity, provide a trusted timestamp, or guarantee enforceability.
+
+The verifier supports SignTrail proof-capsule versions `1.0` and `1.1` and exits non-zero when either the receipt or PDF fails verification. It uses only Node.js built-ins, so another system can verify a SignTrail handoff without running the SignTrail application.
+
 ## v0.3.3 correction
 
 The hosted-link workflow is now genuinely post-finalization:
